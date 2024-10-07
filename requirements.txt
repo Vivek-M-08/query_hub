@@ -1,6 +1,7 @@
 streamlit
 sqlalchemy==2.0.35
-psycopg2==2.9.9
+# psycopg2==2.9.9
+psycopg2-binary==2.9.9
 pandas==2.2.3
 python-dotenv
 chromadb
