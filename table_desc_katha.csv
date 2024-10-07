@@ -1,0 +1,4 @@
+Table,Description
+users,"Contains user account information for the application. It includes fields such as user ID, username, email, password hash, account creation date, last login date, and account status (active, suspended, etc.). This table is essential for managing user authentication and profile details."
+orders,"Records details about orders placed by users. This table includes the order ID, user ID (linked to the users table), order date, shipping address, order status (pending, shipped, delivered), total amount, and payment information. It allows for tracking the status and history of each order."
+payments,"Keeps track of payment transactions for orders. It includes transaction ID, order ID (linked to the orders table), payment date, payment method (credit card, PayPal, etc.), payment status (successful, failed), and amount paid. This table is crucial for managing the financial aspects of orders and ensuring accurate accounting."
