@@ -4,7 +4,7 @@ from utils import invoke_chain
 st.title("ShikshaLokam Query Hub 🔍")
 
 # Move database selection to the sidebar
-options = ["Mentoring", "SCP", "Projects", "Katha"]
+options = ["MENTORING", "SCP", "PROJECTS", "KATHA"]
 selected_option = st.sidebar.radio("Choose DB:", options)
 print("++++++++++++\n" + selected_option)
 

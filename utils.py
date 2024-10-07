@@ -24,36 +24,46 @@ LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2")
 LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
 
 
-def parse_db_string(config_str):
-    pairs = config_str.split(", ")
-    return dict(pair.split("=") for pair in pairs)
+# Function to get database credentials from the environment variables
+# Function to get database credentials from the environment variables
+def get_db_credentials(selected_option):
+    db_user = os.getenv(f"{selected_option}_DB_USER")
+    db_password = os.getenv(f"{selected_option}_DB_PASSWORD")
+    db_host = os.getenv(f"{selected_option}_DB_HOST")
+    db_port = os.getenv(f"{selected_option}_DB_PORT")
+    db_name = os.getenv(f"{selected_option}_DB_NAME")
+
+    # Check if any required credentials are missing
+    if not all([db_user, db_password, db_host, db_port, db_name]):
+        raise ValueError(f"Configuration for {selected_option} not found in the environment variables.")
+
+    # Ensure db_password is a quoted string
+    db_password = urllib.parse.quote(db_password)
+
+    return {
+        "db_user": db_user,
+        "db_password": db_password,
+        "db_host": db_host,
+        "db_port": db_port,
+        "db_name": db_name
+    }
+
 
 @st.cache_resource
 def get_chain(selected_option):
     print("Creating chain")
 
-    if selected_option == "Mentoring":
-        db_cred_ = os.getenv("MENTORING")
-    elif selected_option == "SCP":
-        db_cred_ = os.getenv("SCP")
-    elif selected_option == "Projects":
-        db_cred_ = os.getenv("PROJECTS")
-    elif selected_option == "Katha":
-        db_cred_ = os.getenv("KATHA")
-    else:
-        raise ValueError(f"{selected_option} environment variable not found.")
-
-    credentials = parse_db_string(db_cred_)
-    db_user = credentials.get("db_user")
-    db_password = urllib.parse.quote(credentials.get("db_password"))
-    db_host = credentials.get("db_host")
-    db_port = credentials.get("db_port")
-    db_name = credentials.get("db_name")
+    credentials = get_db_credentials(selected_option)
+    db_user = credentials['db_user']
+    db_password = credentials['db_password']
+    db_host = credentials['db_host']
+    db_port = credentials['db_port']
+    db_name = credentials['db_name']
 
     # Get table descriptions and table extraction chain
     table_details = get_table_details(selected_option)
 
-    print(db_host + " " + db_name + " " + db_port + " "  + db_user + " " +db_password )
+    print(db_host + " " + db_name + " " + str(db_port) + " " + db_user + " " + db_password)
 
     # SQL Database connection
     db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
@@ -102,10 +112,10 @@ def get_chain(selected_option):
 def get_table_details(selected_option):
     # Mapping of selected options to CSV file names
     csv_mapping = {
-        "Mentoring": "table_desc_mentoring.csv",
+        "MENTORING": "table_desc_mentoring.csv",
         "SCP": "table_desc_scp.csv",
-        "Projects": "table_desc_projects.csv",
-        "Katha": "table_desc_katha.csv"
+        "PROJECTS": "table_desc_projects.csv",
+        "KATHA": "table_desc_katha.csv"
     }
 
     # Read the corresponding CSV file
