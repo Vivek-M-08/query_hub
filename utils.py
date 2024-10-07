@@ -15,7 +15,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import PromptTemplate
 from langchain.chains.openai_tools import create_extraction_chain_pydantic
 from langchain_core.pydantic_v1 import BaseModel, Field
-from prompts import final_prompt, answer_prompt
+from prompts import answer_prompt
 
 load_dotenv()
 
