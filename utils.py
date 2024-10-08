@@ -62,29 +62,12 @@ def get_chain(selected_option):
 
     print(db_host + " " + db_name + " " + str(db_port) + " " + db_user + " " + db_password)
 
-
-
     if selected_option == 'KATHA':
         # MySQL Database connection
-        db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}")
+        db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
     else:
         # PostgreSQL Database connection
         db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
-
-    # Additional code to use `db` as needed, e.g., fetching tables or executing queries
-    # return db
-
-
-
-    # SQL Database connection
-    # db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
-    # db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}")
-
-    print(db_host + " " + db_name + " " + db_port + " "  + db_user + " " +db_password )
-
-
-
-
 
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
