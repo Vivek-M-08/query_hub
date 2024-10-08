@@ -23,8 +23,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2")
 LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
 
-
-# Function to get database credentials from the environment variables
 # Function to get database credentials from the environment variables
 def get_db_credentials(selected_option):
     db_user = os.getenv(f"{selected_option}_DB_USER")
@@ -48,7 +46,6 @@ def get_db_credentials(selected_option):
         "db_name": db_name
     }
 
-
 @st.cache_resource
 def get_chain(selected_option):
     print("Creating chain")
@@ -65,12 +62,28 @@ def get_chain(selected_option):
 
     print(db_host + " " + db_name + " " + str(db_port) + " " + db_user + " " + db_password)
 
-    # SQL Database connection
-    db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
 
+
+    if selected_option == 'KATHA':
+        # MySQL Database connection
+        db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}")
+    else:
+        # PostgreSQL Database connection
+        db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
+
+    # Additional code to use `db` as needed, e.g., fetching tables or executing queries
+    # return db
+
+
+
+    # SQL Database connection
+    # db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
     # db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}")
 
     print(db_host + " " + db_name + " " + db_port + " "  + db_user + " " +db_password )
+
+
+
 
 
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
@@ -85,15 +98,6 @@ def get_chain(selected_option):
     execute_query = QuerySQLDataBaseTool(db=db)
     print("************* execute_query *************")
     print(execute_query)
-
-    # # Prompt template for answering questions
-    # answer_prompt = PromptTemplate.from_template(
-    #     """Given the following user question, corresponding SQL query, and SQL result, answer the user question.
-    #     Question: {question}
-    #     SQL Query: {query}
-    #     SQL Result: {result}
-    #     Answer: """
-    # )
 
     rephrase_answer = answer_prompt | llm | StrOutputParser()
 
@@ -131,11 +135,9 @@ def get_table_details(selected_option):
 
     return table_details
 
-
 # Define a Pydantic model for the table extraction
 class Table(BaseModel):
     name: str = Field(description="Name of table in SQL database.")
-
 
 # Create a table extraction chain using the LLM
 def create_table_extraction_chain(llm, table_details):
@@ -159,7 +161,6 @@ def create_history(messages):
         else:
             history.add_ai_message(message["content"])
     return history
-
 
 def invoke_chain(question, messages, selected_option):
     chain = get_chain(selected_option)
