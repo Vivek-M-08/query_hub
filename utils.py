@@ -30,6 +30,9 @@ def get_db_credentials(selected_option):
     db_host = os.getenv(f"{selected_option}_DB_HOST")
     db_port = os.getenv(f"{selected_option}_DB_PORT")
     db_name = os.getenv(f"{selected_option}_DB_NAME")
+    # Falls back to the pre-existing assumption (KATHA -> mysql, everything else -> postgresql)
+    # so current .env files keep working without adding this var; new options should set it explicitly.
+    db_engine = os.getenv(f"{selected_option}_DB_ENGINE", "mysql" if selected_option == "KATHA" else "postgresql")
 
     # Check if any required credentials are missing
     if not all([db_user, db_password, db_host, db_port, db_name]):
@@ -43,7 +46,8 @@ def get_db_credentials(selected_option):
         "db_password": db_password,
         "db_host": db_host,
         "db_port": db_port,
-        "db_name": db_name
+        "db_name": db_name,
+        "db_engine": db_engine
     }
 
 @st.cache_resource
@@ -56,17 +60,16 @@ def get_chain(selected_option):
     db_host = credentials['db_host']
     db_port = credentials['db_port']
     db_name = credentials['db_name']
+    db_engine = credentials['db_engine']
 
     # Get table descriptions and table extraction chain
     table_details = get_table_details(selected_option)
 
     print(db_host + " " + db_name + " " + str(db_port) + " " + db_user + " " + db_password)
 
-    if selected_option == 'KATHA':
-        # MySQL Database connection
+    if db_engine == "mysql":
         db = SQLDatabase.from_uri(f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
     else:
-        # PostgreSQL Database connection
         db = SQLDatabase.from_uri(f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
 
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
