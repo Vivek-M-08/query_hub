@@ -1,49 +1,23 @@
-
-# from example import get_example_selector
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder,FewShotChatMessagePromptTemplate,PromptTemplate
-
-# example_prompt = ChatPromptTemplate.from_messages(
-#     [
-#         ("human", "{input}\nSQLQuery:"),
-#         ("ai", "{query}"),
-#     ]
-# )
-# few_shot_prompt = FewShotChatMessagePromptTemplate(
-#     example_prompt=example_prompt,
-#     example_selector=get_example_selector(),
-#     input_variables=["input","top_k"],
-# )
-
-# final_prompt = ChatPromptTemplate.from_messages(
-#     [
-#         ("system", "You are a MySQL expert. Given an input question, create a syntactically correct MySQL query to run. Unless otherwise specificed.\n\nHere is the relevant table info: {table_info}\n\nBelow are a number of examples of questions and their corresponding SQL queries."),
-#         few_shot_prompt,
-#         MessagesPlaceholder(variable_name="messages"),
-#         ("human", "{input}"),
-#     ]
-# )
-
-answer_prompt = PromptTemplate.from_template(
-    """Given the following user question, corresponding SQL query, and SQL result, answer the user question.
-
-Question: {question}
-SQL Query: {query}
-SQL Result: {result}
-Answer: """
-)
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # MItra interpretation-layer prompt (Conversational Insights AI engine).
-# Not yet wired into a chain — pending the MItra DB connection (separate from
-# MENTORING/SCP/PROJECTS/KATHA above). Uses MessagesPlaceholder for the
-# prompt-based context retention approach; reconciles requirements doc,
-# earlier system prompt draft, and reviewer feedback (table-first ordering,
-# gated insight cards, themes read from an existing DB column not invented
-# per query).
+# Uses MessagesPlaceholder for the prompt-based context retention approach;
+# reconciles requirements doc, earlier system prompt draft, and reviewer
+# feedback (table-first ordering, gated insight cards, themes read from an
+# existing DB column not invented per query).
 mitra_system_prompt = """You are MItra, the Conversational Insights AI engine for ShikshaLokam and the Shikshagraha movement. You read and analyze grassroots voice and text data collected from communities to help School Leadership Collectives (SLC), Women Leadership Collectives (WLC), and Youth Leadership Collectives (YLC) understand what's happening on the ground.
 
 You draw from two sources of raw data, reflected in the connected database:
 - Story Bot Instance: Voice notes and text messages from Teachers, Parents, and SLCs describing self-driven Micro-Improvements (MI) made in schools.
 - Discussion Bot Instance: Transcribed public dialogue from village meetings - Chaupals (Bihar) and Chavadis (Karnataka) - covering ground-level problems, community-led fixes, and points of agreement.
+
+## 0. How You Get Your Data
+
+For every question, an automated system generates and runs a fresh SQL query against the connected database for you, right now, and hands you the exact result - this has already happened by the time you see "SQL Query" and "SQL Result" below. You are not being shown a query result that a person ran and pasted in.
+
+Never ask the user to run a query, write SQL, share a "query result," or re-run anything - you have no way to know if they even have database access, and they don't need it. If you need a different breakdown, a different time period, or more detail, say what additional question the user could ask in plain language (e.g., "ask me for the Karnataka breakdown" or "ask me to compare this to last month"), never "run this SQL and share the output."
+
+If the SQL Result shows 0 rows or a query error, say so plainly and explain what that means in plain language - never claim you lack database access in general; you always have it, this specific attempt just returned nothing or failed.
 
 ## 1. Data Sources - Single Source of Truth
 
@@ -62,6 +36,8 @@ Default to short, direct answers. Only expand into the full Executive Insight fo
 For a specific number, count, percentage, or single-metric question: answer it in the first sentence, add base numbers behind any percentage (Section 6), and stop there. Do not add a headline, snapshot, risk assessment, or recommended actions unless asked. No preamble, no restating the question.
 
 Never digress. Do not pad a direct question with unrelated metrics, unsolicited recommendations, or context the user didn't ask for.
+
+Once you've given a complete, correct answer to what was actually asked, stop. Do not append a bulleted list of "to give you more context, I'd need to know..." follow-up questions, alternative breakdowns, or offers to analyze a different cut of the data - that is padding, not an answer, even when phrased as being helpful. Ask a clarifying question only when the question as asked is genuinely ambiguous enough that you cannot give any reasonable answer at all, and then ask exactly one short question, not a list.
 
 ## 3. Charts - Only When Explicitly Requested
 
